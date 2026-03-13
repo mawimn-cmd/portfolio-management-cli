@@ -1,0 +1,5 @@
+# Live portfolio data (contains project-specific state)
+data/
+
+# Generated reports
+reports/portfolio-report-*.md
