@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio Management CLI — Process Flow v2</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f1117;
+      color: #e1e4e8;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a1e2e 0%, #252a3a 100%);
+      border-bottom: 1px solid #30363d;
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: #f0f3f6;
+    }
+
+    header h1 span { color: #7c8aff; }
+
+    header .subtitle {
+      font-size: 13px;
+      color: #8b949e;
+      margin-top: 4px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      padding: 0 40px;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+    }
+
+    .tab {
+      padding: 12px 24px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #8b949e;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .tab:hover { color: #e1e4e8; }
+
+    .tab.active {
+      color: #7c8aff;
+      border-bottom-color: #7c8aff;
+    }
+
+    /* Main */
+    main { padding: 32px 40px; }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ===== OVERVIEW TAB ===== */
+    .overview-flow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .tier-card {
+      width: 100%;
+      border-radius: 12px;
+      padding: 24px 28px;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+    }
+
+    .tier-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .tier-card.expanded {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .tier-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .tier-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .tier-badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .tier-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .tier-count {
+      font-size: 12px;
+      color: #8b949e;
+    }
+
+    .tier-chevron {
+      font-size: 18px;
+      color: #8b949e;
+      transition: transform 0.25s;
+    }
+
+    .tier-card.expanded .tier-chevron {
+      transform: rotate(180deg);
+    }
+
+    .tier-desc {
+      font-size: 13px;
+      color: #8b949e;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    /* Expanded skill grid */
+    .tier-details {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+    }
+
+    .tier-card.expanded .tier-details {
+      max-height: 600px;
+    }
+
+    .skill-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .skill-chip {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      transition: all 0.15s;
+      cursor: default;
+      position: relative;
+    }
+
+    .skill-chip:hover {
+      filter: brightness(1.2);
+    }
+
+    .skill-name {
+      font-weight: 600;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 12px;
+    }
+
+    .skill-sub {
+      font-size: 11px;
+      opacity: 0.6;
+    }
+
+    .skill-prereq {
+      font-size: 10px;
+      opacity: 0.5;
+      font-style: italic;
+      margin-top: 2px;
+    }
+
+    /* Tier colors */
+    .tier-0 {
+      background: linear-gradient(135deg, #1c1f2e, #252840);
+      border: 1px solid rgba(124, 138, 255, 0.3);
+    }
+    .tier-0 .tier-badge { background: #7c8aff22; color: #7c8aff; }
+    .tier-0 .tier-title { color: #7c8aff; }
+
+    .tier-1 {
+      background: linear-gradient(135deg, #111827, #172035);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+    .tier-1 .tier-badge { background: #3b82f622; color: #60a5fa; }
+    .tier-1 .tier-title { color: #60a5fa; }
+    .tier-1 .skill-chip { background: #1a2332; border: 1px solid rgba(59, 130, 246, 0.2); }
+    .tier-1 .skill-name { color: #60a5fa; }
+
+    .tier-2 {
+      background: linear-gradient(135deg, #0f1f17, #142820);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+    .tier-2 .tier-badge { background: #22c55e22; color: #4ade80; }
+    .tier-2 .tier-title { color: #4ade80; }
+    .tier-2 .skill-chip { background: #132218; border: 1px solid rgba(34, 197, 94, 0.2); }
+    .tier-2 .skill-name { color: #4ade80; }
+
+    .tier-data {
+      background: linear-gradient(135deg, #1a1510, #201c14);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    .tier-data .tier-badge { background: #f59e0b22; color: #fbbf24; }
+    .tier-data .tier-title { color: #fbbf24; }
+    .tier-data .skill-chip { background: #231c0d; border: 1px solid rgba(245, 158, 11, 0.2); }
+    .tier-data .skill-name { color: #fbbf24; font-family: 'Cascadia Code', 'Fira Code', monospace; }
+
+    /* Arrow connector between tiers */
+    .flow-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 40px;
+      justify-content: center;
+      position: relative;
+    }
+
+    .flow-arrow-line {
+      width: 2px;
+      height: 24px;
+      background: linear-gradient(to bottom, #7c8aff44, #7c8aff22);
+    }
+
+    .flow-arrow-head {
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 8px solid #7c8aff44;
+    }
+
+    .flow-arrow-label {
+      position: absolute;
+      right: calc(50% - 120px);
+      transform: translateX(-100%);
+      font-size: 10px;
+      color: #8b949e;
+      white-space: nowrap;
+    }
+
+    /* ===== CHAINS TAB ===== */
+    .chains-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 1100px;
+    }
+
+    .chain-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .chain-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #f0f3f6;
+    }
+
+    .chain-card .chain-desc {
+      font-size: 12px;
+      color: #8b949e;
+      margin-bottom: 16px;
+    }
+
+    .chain-steps {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chain-step {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-weight: 600;
+    }
+
+    .chain-step.bp { background: #1a2332; color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25); }
+    .chain-step.pf { background: #132218; color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.25); }
+    .chain-step.data { background: #231c0d; color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25); }
+
+    .chain-arrow {
+      color: #4b5563;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    /* ===== PLANNING TAB ===== */
+    .planning-flow {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .phase-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      position: relative;
+      padding-bottom: 12px;
+    }
+
+    .phase-card:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 44px;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, #a855f7, #a855f722);
+    }
+
+    .phase-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #231430;
+      border: 2px solid #a855f7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #d8b4fe;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    .phase-content {
+      flex: 1;
+      padding-bottom: 24px;
+    }
+
+    .phase-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #d8b4fe;
+      margin-bottom: 4px;
+    }
+
+    .phase-desc {
+      font-size: 13px;
+      color: #8b949e;
+      line-height: 1.5;
+    }
+
+    .phase-output {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #a855f7;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+    }
+
+    /* ===== DATA TAB ===== */
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      max-width: 1100px;
+    }
+
+    .data-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .data-card h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fbbf24;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      margin-bottom: 6px;
+    }
+
+    .data-card p {
+      font-size: 12px;
+      color: #8b949e;
+      margin-bottom: 10px;
+    }
+
+    .data-rw {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .data-rw-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+    }
+
+    .data-rw-tag.write { background: #132218; color: #4ade80; }
+    .data-rw-tag.read { background: #1a1a2e; color: #8b949e; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .chains-grid { grid-template-columns: 1fr; }
+      .tabs { padding: 0 16px; overflow-x: auto; }
+      .tab { padding: 12px 16px; white-space: nowrap; }
+      main { padding: 24px 16px; }
+      header { padding: 20px 16px; flex-direction: column; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1><span>/pm</span> Portfolio Management CLI</h1>
+      <div class="subtitle">Interactive Process Flow — Click tiers to explore</div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="overview">Overview</div>
+    <div class="tab" data-tab="chains">Chaining Flows</div>
+    <div class="tab" data-tab="planning">Planning Cycle</div>
+    <div class="tab" data-tab="data">Data Layer</div>
+  </div>
+
+  <main>
+    <!-- ===== OVERVIEW ===== -->
+    <div class="view active" id="view-overview">
+      <div class="overview-flow">
+
+        <!-- Tier 0 -->
+        <div class="tier-card tier-0" onclick="toggleTier(this)">
+          <div class="tier-header">
+            <div class="tier-header-left">
+              <div class="tier-badge">TIER 0</div>
+              <div class="tier-title">/pm — Smart Wrapper</div>
+            </div>
+            <div class="tier-count">Entry Point</div>
+          </div>
+          <div class="tier-desc">Conversational entry point. Routes intent to the right skill, chains multi-step workflows, offers guided or power-user modes.</div>
+        </div>
+
+        <div class="flow-arrow">
+          <div class="flow-arrow-line"></div>
+          <div class="flow-arrow-head"></div>
+          <div class="flow-arrow-label">routes to</div>
+        </div>
+
+        <!-- Tier 1 -->
+        <div class="tier-card tier-1" onclick="toggleTier(this)">
+          <div class="tier-header">
+            <div class="tier-header-left">
+              <div class="tier-badge">TIER 1</div>
+              <div class="tier-title">Governance & Planning</div>
+            </div>
+            <div class="tier-header-right">
+              <div class="tier-count">10 skills</div>
+              <div class="tier-chevron">&#9662;</div>
+            </div>
+          </div>
+          <div class="tier-desc">Single-project skills — set up projects, model financials, plan capacity, track budgets.</div>
+          <div class="tier-details">
+            <div class="skill-grid">
+              <div class="skill-chip">
+                <div class="skill-name">/bp-setup</div>
+                <div class="skill-sub">Initialize portfolio config</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/bp-project</div>
+                <div class="skill-sub">Project registry</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/bp-team</div>
+                <div class="skill-sub">Team registration</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/bp-financials</div>
+                <div class="skill-sub">Revenue & cost modeling</div>
+                <div class="skill-prereq">needs: project</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/bp-npv</div>
+                <div class="skill-sub">NPV / ROI / IRR</div>
+                <div class="skill-prereq">needs: financials</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/bp-business-case</div>
+                <div class="skill-sub">Business case document</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/bp-capacity</div>
+                <div class="skill-sub">Sprint/phase planning</div>
+                <div class="skill-prereq">needs: team</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/bp-forecast</div>
+                <div class="skill-sub">Delivery forecast</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/bp-budget</div>
+                <div class="skill-sub">Budget & burn rate</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/bp-evm</div>
+                <div class="skill-sub">Earned Value Management</div>
+                <div class="skill-prereq">needs: budget</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-arrow">
+          <div class="flow-arrow-line"></div>
+          <div class="flow-arrow-head"></div>
+          <div class="flow-arrow-label">feeds into</div>
+        </div>
+
+        <!-- Tier 2 -->
+        <div class="tier-card tier-2" onclick="toggleTier(this)">
+          <div class="tier-header">
+            <div class="tier-header-left">
+              <div class="tier-badge">TIER 2</div>
+              <div class="tier-title">Portfolio Intelligence</div>
+            </div>
+            <div class="tier-header-right">
+              <div class="tier-count">10 skills</div>
+              <div class="tier-chevron">&#9662;</div>
+            </div>
+          </div>
+          <div class="tier-desc">Multi-project skills — health dashboards, prioritization, planning cycles, executive reporting.</div>
+          <div class="tier-details">
+            <div class="skill-grid">
+              <div class="skill-chip">
+                <div class="skill-name">/pf-health</div>
+                <div class="skill-sub">Health dashboard</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/pf-prioritize</div>
+                <div class="skill-sub">Score & rank projects</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/pf-review</div>
+                <div class="skill-sub">Governance review</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/pf-scenario</div>
+                <div class="skill-sub">What-if analysis</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/pf-plan</div>
+                <div class="skill-sub">Planning cycle (6 phases)</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/pf-allocate</div>
+                <div class="skill-sub">Resource allocation</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/pf-pipeline</div>
+                <div class="skill-sub">Pipeline management</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/pf-one-pager</div>
+                <div class="skill-sub">One-page summaries</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/pf-report</div>
+                <div class="skill-sub">Executive report</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">/pf-snapshot</div>
+                <div class="skill-sub">Historical snapshot</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-arrow">
+          <div class="flow-arrow-line"></div>
+          <div class="flow-arrow-head"></div>
+          <div class="flow-arrow-label">reads / writes</div>
+        </div>
+
+        <!-- Data Layer -->
+        <div class="tier-card tier-data" onclick="toggleTier(this)">
+          <div class="tier-header">
+            <div class="tier-header-left">
+              <div class="tier-badge">DATA</div>
+              <div class="tier-title">Shared Data Layer</div>
+            </div>
+            <div class="tier-header-right">
+              <div class="tier-count">8 files + reports/</div>
+              <div class="tier-chevron">&#9662;</div>
+            </div>
+          </div>
+          <div class="tier-desc">All skills read and write from a shared set of CSVs and config. Generated reports output to reports/.</div>
+          <div class="tier-details">
+            <div class="skill-grid">
+              <div class="skill-chip">
+                <div class="skill-name">config.json</div>
+                <div class="skill-sub">Settings & PMO governance</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">projects.csv</div>
+                <div class="skill-sub">Project registry</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">financials.csv</div>
+                <div class="skill-sub">Revenue & costs</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">teams.csv</div>
+                <div class="skill-sub">Team registry</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">capacity.csv</div>
+                <div class="skill-sub">Sprint / phase plans</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">budget.csv</div>
+                <div class="skill-sub">Baselines & EVM</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">pipeline.csv</div>
+                <div class="skill-sub">Ideas & proposals</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">snapshots.csv</div>
+                <div class="skill-sub">Historical states</div>
+              </div>
+              <div class="skill-chip">
+                <div class="skill-name">reports/</div>
+                <div class="skill-sub">Generated documents</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== CHAINING FLOWS ===== -->
+    <div class="view" id="view-chains">
+      <div class="chains-grid">
+        <div class="chain-card">
+          <h3>New Project End-to-End</h3>
+          <div class="chain-desc">Register a project and set up all supporting data in one flow.</div>
+          <div class="chain-steps">
+            <div class="chain-step bp">/bp-project</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step bp">/bp-team</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step bp">/bp-financials</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step bp">/bp-npv</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step bp">/bp-budget</div>
+          </div>
+        </div>
+
+        <div class="chain-card">
+          <h3>Business Case</h3>
+          <div class="chain-desc">Build a business case from financial projections through NPV analysis.</div>
+          <div class="chain-steps">
+            <div class="chain-step bp">/bp-financials</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step bp">/bp-npv</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step bp">/bp-business-case</div>
+          </div>
+        </div>
+
+        <div class="chain-card">
+          <h3>Monthly Governance</h3>
+          <div class="chain-desc">Run a health check, conduct a governance review, and save the state.</div>
+          <div class="chain-steps">
+            <div class="chain-step pf">/pf-health</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step pf">/pf-review</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step pf">/pf-snapshot</div>
+          </div>
+        </div>
+
+        <div class="chain-card">
+          <h3>Prepare Planning</h3>
+          <div class="chain-desc">Assess portfolio health, generate summaries, then run the planning cycle.</div>
+          <div class="chain-steps">
+            <div class="chain-step pf">/pf-health</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step pf">/pf-one-pager all</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step pf">/pf-plan</div>
+          </div>
+        </div>
+
+        <div class="chain-card" style="grid-column: span 2;">
+          <h3>Import Everything</h3>
+          <div class="chain-desc">Bulk import all data files from an external directory using fuzzy column matching.</div>
+          <div class="chain-steps">
+            <div class="chain-step data">projects</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step data">teams</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step data">financials</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step data">capacity</div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step data">budget</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PLANNING CYCLE ===== -->
+    <div class="view" id="view-planning">
+      <div class="planning-flow">
+        <div class="phase-card">
+          <div class="phase-number">1</div>
+          <div class="phase-content">
+            <div class="phase-title">Strategy Input</div>
+            <div class="phase-desc">Define strategic themes, investment targets, and budget buckets. Sets the guardrails for what the portfolio should achieve.</div>
+            <div class="phase-output">Output: themes, targets, allocation buckets</div>
+          </div>
+        </div>
+
+        <div class="phase-card">
+          <div class="phase-number">2</div>
+          <div class="phase-content">
+            <div class="phase-title">Portfolio Guidance</div>
+            <div class="phase-desc">Establish capacity constraints and budget envelopes. How much can we actually do?</div>
+            <div class="phase-output">Output: capacity ceiling, budget envelope</div>
+          </div>
+        </div>
+
+        <div class="phase-card">
+          <div class="phase-number">3</div>
+          <div class="phase-content">
+            <div class="phase-title">Proposals</div>
+            <div class="phase-desc">Collect project proposals and run readiness checks. Are proposals complete enough for prioritization?</div>
+            <div class="phase-output">Output: proposal readiness scores</div>
+          </div>
+        </div>
+
+        <div class="phase-card">
+          <div class="phase-number">4</div>
+          <div class="phase-content">
+            <div class="phase-title">Prioritization</div>
+            <div class="phase-desc">Score and rank all proposals. Draw the cut line based on capacity and budget constraints.</div>
+            <div class="phase-output">Output: ranked list, cut line, trade-off options</div>
+          </div>
+        </div>
+
+        <div class="phase-card">
+          <div class="phase-number">5</div>
+          <div class="phase-content">
+            <div class="phase-title">Executive Alignment</div>
+            <div class="phase-desc">Present trade-offs to leadership. Resolve conflicts, adjust priorities, get sign-off.</div>
+            <div class="phase-output">Output: approved portfolio, documented decisions</div>
+          </div>
+        </div>
+
+        <div class="phase-card">
+          <div class="phase-number">6</div>
+          <div class="phase-content">
+            <div class="phase-title">Approval & Allocation</div>
+            <div class="phase-desc">Fund approved projects, assign teams, set baselines. Saves a snapshot for future comparison.</div>
+            <div class="phase-output">Output: funded projects, baselines, snapshot saved</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DATA LAYER ===== -->
+    <div class="view" id="view-data">
+      <div class="data-grid">
+        <div class="data-card">
+          <h4>config.json</h4>
+          <p>Portfolio settings, cost categories (CapEx/OpEx), PMO governance thresholds, reporting cadence.</p>
+          <div class="data-rw">
+            <div class="data-rw-tag write">/bp-setup writes</div>
+            <div class="data-rw-tag read">all skills read</div>
+          </div>
+        </div>
+
+        <div class="data-card">
+          <h4>projects.csv</h4>
+          <p>Project registry — ID, name, status, owner, dates, strategic theme.</p>
+          <div class="data-rw">
+            <div class="data-rw-tag write">/bp-project</div>
+            <div class="data-rw-tag read">/pf-health</div>
+            <div class="data-rw-tag read">/pf-prioritize</div>
+            <div class="data-rw-tag read">/pf-review</div>
+          </div>
+        </div>
+
+        <div class="data-card">
+          <h4>financials.csv</h4>
+          <p>Revenue and cost projections per project per year.</p>
+          <div class="data-rw">
+            <div class="data-rw-tag write">/bp-financials</div>
+            <div class="data-rw-tag read">/bp-npv</div>
+            <div class="data-rw-tag read">/pf-health</div>
+          </div>
+        </div>
+
+        <div class="data-card">
+          <h4>teams.csv</h4>
+          <p>Team registry — Agile or Traditional mode, members, velocity.</p>
+          <div class="data-rw">
+            <div class="data-rw-tag write">/bp-team</div>
+            <div class="data-rw-tag read">/bp-capacity</div>
+            <div class="data-rw-tag read">/pf-allocate</div>
+          </div>
+        </div>
+
+        <div class="data-card">
+          <h4>capacity.csv</h4>
+          <p>Sprint/phase capacity plans per team per project.</p>
+          <div class="data-rw">
+            <div class="data-rw-tag write">/bp-capacity</div>
+            <div class="data-rw-tag read">/bp-forecast</div>
+            <div class="data-rw-tag read">/pf-allocate</div>
+          </div>
+        </div>
+
+        <div class="data-card">
+          <h4>budget.csv</h4>
+          <p>Budget baselines, actuals, and Earned Value Management tracking.</p>
+          <div class="data-rw">
+            <div class="data-rw-tag write">/bp-budget</div>
+            <div class="data-rw-tag write">/bp-evm</div>
+            <div class="data-rw-tag read">/pf-health</div>
+          </div>
+        </div>
+
+        <div class="data-card">
+          <h4>pipeline.csv</h4>
+          <p>Pre-approval project ideas and proposals.</p>
+          <div class="data-rw">
+            <div class="data-rw-tag write">/pf-pipeline</div>
+            <div class="data-rw-tag read">/pf-plan</div>
+            <div class="data-rw-tag read">/pf-prioritize</div>
+          </div>
+        </div>
+
+        <div class="data-card">
+          <h4>snapshots.csv</h4>
+          <p>Historical portfolio state — saved at review points for trend analysis.</p>
+          <div class="data-rw">
+            <div class="data-rw-tag write">/pf-snapshot</div>
+            <div class="data-rw-tag read">/pf-review</div>
+          </div>
+        </div>
+
+        <div class="data-card">
+          <h4>reports/</h4>
+          <p>Generated documents — business cases, one-pagers, executive reports.</p>
+          <div class="data-rw">
+            <div class="data-rw-tag write">/bp-business-case</div>
+            <div class="data-rw-tag write">/pf-report</div>
+            <div class="data-rw-tag write">/pf-one-pager</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('view-' + tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Tier expand/collapse
+    function toggleTier(el) {
+      el.classList.toggle('expanded');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+id,name,type,status,phase,org_unit,owner,strategic_bucket,priority_rank,start_date,target_end_date,description
+P001,Platform Reliability Upgrade,Enhancement,Active,Execution,Engineering,,Core Growth,1,2026-01-15,2026-09-30,"Improve core platform uptime from 99.9% to 99.95% through infrastructure hardening, automated failover, and observability improvements"
+P002,Public API & Partner Portal,Platform,Active,Execution,Product,,Adjacent,2,2026-02-01,2026-10-31,"Build and launch a public REST API with developer portal, sandbox environment, and partner certification program"
+P003,Self-Serve Onboarding,Enhancement,Active,Execution,Product,,Core Growth,3,2026-03-01,2026-08-31,"Replace manual onboarding with a guided self-serve setup wizard to reduce time-to-value from 3 weeks to 3 days"
+P004,Healthcare Vertical Pilot,New Product,Approved,Planning,Data,,Transformational,4,2026-04-01,2026-12-31,"Adapt the workflow engine for healthcare operations — HIPAA-compliant data handling, clinical workflow templates, EHR integration"
+P005,SOC 2 Compliance,Compliance,Active,Execution,Infrastructure,,Core Growth,,2026-01-01,2026-08-31,"Achieve SOC 2 Type II certification — policy documentation, access controls, audit logging, penetration testing, and third-party audit"
+P006,Mobile Companion App,New Product,Pipeline,Ideation,Product,,Adjacent,,TBD,TBD,"Native mobile app for task approvals, notifications, and lightweight workflow management on the go"

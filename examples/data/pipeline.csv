@@ -1,0 +1,3 @@
+id,name,org_unit,strategic_fit_score,estimated_cost,estimated_benefit,maturity,target_start,notes
+PL001,AI Workflow Suggestions,Data,7,350000,800000,Concept,2026-Q3,ML-powered workflow optimization recommendations based on usage patterns
+PL002,White-Label Partner Program,Product,6,200000,500000,Concept,2027-Q1,Allow partners to resell the platform under their own brand

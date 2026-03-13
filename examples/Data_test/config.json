@@ -1,0 +1,47 @@
+{
+  "portfolio_name": "Product Engineering Portfolio FY2026",
+  "currency": "USD",
+  "fiscal_year_start_month": 1,
+  "projection_years": 5,
+  "discount_rate": 0.10,
+  "tax_rate": 0.25,
+  "amortization_years": 5,
+  "depreciation_years": 4,
+  "contingency_default": 0.20,
+  "agile": {
+    "sprint_weeks": 2,
+    "focus_factor": 0.65,
+    "buffer_reserve": 0.15
+  },
+  "traditional": {
+    "productivity_factor": 0.70,
+    "contingency": 0.20
+  },
+  "project_types": ["New Product", "Enhancement", "Platform", "Research", "Compliance"],
+  "statuses": ["Pipeline", "Approved", "Active", "On-Hold", "Completed", "Cancelled"],
+  "phases": ["Ideation", "Planning", "Execution", "Monitoring", "Closure"],
+  "strategic_buckets": ["Core Growth", "Adjacent", "Transformational"],
+  "bucket_targets": {
+    "core_growth_pct": 60,
+    "adjacent_pct": 25,
+    "transformational_pct": 15
+  },
+  "org_units": ["Product", "Engineering", "Data", "Infrastructure"],
+  "prioritization_weights": {
+    "strategic_fit": 0.35,
+    "financial_return": 0.30,
+    "risk": 0.20,
+    "feasibility": 0.15
+  },
+  "cost_categories": {
+    "capex": ["R&D salaries", "Hardware", "Software licenses (perpetual)", "Infrastructure build-out", "Patents/IP"],
+    "opex": ["Cloud/hosting", "SaaS subscriptions", "Support & maintenance", "Sales & marketing", "Training & travel", "Contractors/consulting"]
+  },
+  "pmo_settings": {
+    "reporting_cadence": "Monthly",
+    "approval_threshold": 300000,
+    "risk_escalation_cpi": 0.85,
+    "risk_escalation_spi": 0.85,
+    "mandate_baselines": true
+  }
+}

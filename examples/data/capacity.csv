@@ -1,0 +1,5 @@
+team_id,period_label,period_type,members_available,effective_capacity,planned_work,actual_work,utilization_pct,buffer_pct
+T001,2026-Q1,Quarter,6,3.9,3.6,3.8,97,3
+T002,2026-Q1,Quarter,5,3.25,3.0,2.8,86,14
+T003,2026-Q1,Quarter,4,2.6,2.4,2.3,88,12
+T004,2026-Q1,Quarter,3,2.1,2.1,2.3,110,0
