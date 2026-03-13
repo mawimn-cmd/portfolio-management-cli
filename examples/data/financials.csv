@@ -1,7 +1,0 @@
-project_id,fy,revenue,costs_capex,costs_opex,gross_margin,operating_income,npv,roi_pct,payback_years,notes
-P001,2026,0,320000,80000,-400000,-400000,520000,130,1.5,Reduces churn by 15%. Revenue impact indirect but high — retained ARR worth $2M+.
-P002,2026,200000,280000,70000,-150000,-150000,380000,109,2,Partner revenue share starts Q3. API adoption drives platform stickiness.
-P003,2026,300000,150000,50000,100000,100000,290000,145,1,Direct revenue impact — faster onboarding increases trial-to-paid conversion by 20%.
-P004,2026,100000,250000,100000,-250000,-250000,180000,51,3,Healthcare vertical revenue ramps in FY2027. FY2026 is investment year with 5 pilot customers.
-P005,2026,0,180000,60000,-240000,-240000,0,0,0,Mandated compliance. No direct revenue but unlocks enterprise deals requiring SOC 2.
-P006,2026,0,200000,50000,-250000,-250000,150000,60,2.5,Mobile app drives engagement and retention. Revenue impact through reduced churn.

@@ -1,5 +1,0 @@
-team_id,team_name,project_id,planning_mode,headcount,avg_monthly_cost_per_person,velocity_avg,focus_factor,productivity_factor
-T001,Core Platform,P001,Agile,6,10000,24,0.65,
-T002,API & Integrations,P002,Agile,5,10000,20,0.65,
-T003,Growth & Onboarding,P003,Agile,4,9500,18,0.65,
-T004,Security & Compliance,P005,Traditional,3,11000,,,0.70
